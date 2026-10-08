@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Aegis Pulse - Zero Trust Security Demonstration">
+<title>Aegis Pulse | Zero Trust Security</title>
+<style>
+:root{--bg:#07111f;--panel:#0d1a2b;--panel2:#101f33;--text:#eaf2ff;--muted:#8fa4bd;--line:#1d324c;--accent:#4da3ff;--good:#39d98a;--warn:#ffc857;--bad:#ff647c;--shadow:0 18px 50px rgba(0,0,0,.28)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#06101c,#0a1727);color:var(--text);min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+#login{min-height:100vh;display:grid;place-items:center;padding:24px}.login-card{width:min(460px,100%);background:rgba(13,26,43,.96);border:1px solid var(--line);border-radius:22px;padding:34px;box-shadow:var(--shadow)}
+.brand{display:flex;gap:13px;align-items:center;margin-bottom:28px}.logo{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#1677ff,#6b5cff);display:grid;place-items:center;font-weight:900;font-size:22px}.brand h1{font-size:21px;margin:0}.brand p{margin:4px 0 0;color:var(--muted);font-size:13px}
+label{display:block;color:var(--muted);font-size:13px;margin:15px 0 7px}.field{width:100%;background:#091625;border:1px solid var(--line);color:var(--text);padding:12px 13px;border-radius:10px;outline:none}.field:focus{border-color:var(--accent)}
+.primary{width:100%;border:0;border-radius:10px;padding:12px;background:linear-gradient(90deg,#1677ff,#5e5cff);color:#fff;font-weight:800;margin-top:18px}.demo-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:15px}.login-error{color:var(--bad);font-size:13px;margin-top:10px;min-height:18px}
+#app{display:none;min-height:100vh}.topbar{height:68px;border-bottom:1px solid var(--line);background:rgba(7,17,31,.92);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:10}.top-left,.top-right{display:flex;align-items:center;gap:14px}.top-brand{font-weight:900}.pill{border:1px solid var(--line);border-radius:999px;padding:7px 11px;color:var(--muted);font-size:12px}.status-dot{width:8px;height:8px;background:var(--good);border-radius:50%;display:inline-block;margin-right:6px}
+.layout{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 68px)}aside{border-right:1px solid var(--line);padding:18px 12px;background:rgba(8,19,33,.7)}.nav{width:100%;background:transparent;border:0;color:var(--muted);padding:12px 13px;border-radius:10px;text-align:left;margin-bottom:5px}.nav:hover,.nav.active{background:#10233a;color:#fff}.nav small{float:right;opacity:.5}
+main{padding:24px;max-width:1500px;width:100%;margin:auto}.view{display:none}.view.active{display:block}.page-title{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:20px}.page-title h2{margin:0 0 5px;font-size:25px}.page-title p{margin:0;color:var(--muted);font-size:13px}
+.btn{border:1px solid var(--line);background:#102239;color:#dceaff;padding:10px 13px;border-radius:9px}.btn:hover{border-color:#3c6086}.btn.good{background:rgba(57,217,138,.12);border-color:rgba(57,217,138,.35)}.btn.bad{background:rgba(255,100,124,.12);border-color:rgba(255,100,124,.35)}
+.grid{display:grid;gap:15px}.cards{grid-template-columns:repeat(4,minmax(0,1fr))}.two{grid-template-columns:1.2fr .8fr}.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:linear-gradient(145deg,var(--panel),#0a1727);border:1px solid var(--line);border-radius:15px;padding:18px;box-shadow:0 8px 25px rgba(0,0,0,.12)}.metric{color:var(--muted);font-size:12px}.metric-value{font-size:29px;font-weight:900;margin:8px 0}.metric-note{font-size:12px;color:var(--muted)}.good-text{color:var(--good)}.warn-text{color:var(--warn)}.bad-text{color:var(--bad)}
+.section-title{font-size:14px;font-weight:800;margin-bottom:13px}.bar{height:9px;background:#172b42;border-radius:99px;overflow:hidden}.bar span{display:block;height:100%;background:linear-gradient(90deg,#39d98a,#4da3ff);border-radius:99px}.chart{height:220px;display:flex;align-items:flex-end;gap:10px;padding:15px 5px 5px}.chart .col{flex:1;height:100%;display:flex;align-items:flex-end}.chart .barcol{width:100%;border-radius:7px 7px 2px 2px;background:linear-gradient(#4da3ff,#3763c7);min-height:8px}.chart-labels{display:flex;gap:10px;padding:0 5px;color:var(--muted);font-size:10px}.chart-labels span{flex:1;text-align:center}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.actions{display:flex;gap:9px;flex-wrap:wrap}.result{margin-top:14px;border-radius:12px;padding:14px;background:#091625;border:1px solid var(--line);line-height:1.6}.decision{font-weight:900}.decision.allow{color:var(--good)}.decision.mfa{color:var(--warn)}.decision.block{color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:12px 9px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--muted);font-weight:700}.table-wrap{overflow:auto}.badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800}.badge.good{background:rgba(57,217,138,.12);color:var(--good)}.badge.warn{background:rgba(255,200,87,.12);color:var(--warn)}.badge.bad{background:rgba(255,100,124,.12);color:var(--bad)}.badge.neutral{background:#15283f;color:#b5c7dc}
+.list{display:grid;gap:10px}.event{display:grid;grid-template-columns:86px 1fr auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:12px}.event:last-child{border-bottom:0}.event .who{font-weight:800}.event .desc{color:var(--muted)}
+.policy{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}.policy:last-child{border-bottom:0}.switch{position:relative;width:45px;height:25px}.switch input{display:none}.slider{position:absolute;inset:0;background:#25384e;border-radius:99px}.slider:before{content:"";position:absolute;width:19px;height:19px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.switch input:checked+.slider{background:#1677ff}.switch input:checked+.slider:before{transform:translateX(20px)}
+.toast{position:fixed;right:20px;bottom:20px;background:#10243a;border:1px solid #31516f;padding:12px 15px;border-radius:11px;box-shadow:var(--shadow);display:none;z-index:30}.toast.show{display:block}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;place-items:center;z-index:25;padding:20px}.modal.open{display:grid}.modal-card{width:min(520px,100%);background:#0d1a2b;border:1px solid var(--line);border-radius:17px;padding:22px}
+body.light{--bg:#f3f7fb;--panel:#fff;--panel2:#f8fbff;--text:#17263a;--muted:#61748a;--line:#d6e0ea;background:#f3f7fb}
+body.light .topbar{background:rgba(255,255,255,.92)}
+body.light aside{background:#f8fbff}
+body.light .field{background:#fff;color:#17263a}
+body.light .card{background:#fff}
+body.light .btn{background:#f4f7fa;color:#17263a}
+@media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}.layout{grid-template-columns:1fr}aside{display:flex;overflow:auto;gap:5px;border-right:0;border-bottom:1px solid var(--line)}.nav{min-width:130px}.nav small{display:none}}
+@media(max-width:600px){main{padding:15px}.cards{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.topbar{padding:0 13px}.top-right .pill{display:none}}
+
+/* --- fixes --- */
+.section-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.switch{margin:0;flex:none;display:inline-block}
+.nav:focus-visible,.btn:focus-visible,.primary:focus-visible,.field:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{background:#091625;padding:3px 7px;border-radius:6px}
+body.light .login-card,body.light .modal-card{background:#fff}
+body.light .result,body.light code{background:#eef3f9;color:var(--text)}
+body.light .nav:hover,body.light .nav.active{background:#e3eefb;color:#0b2a4d}
+body.light .toast{background:#fff;color:#17263a;border-color:#b9cadb}
+body.light .bar,body.light .slider{background:#d3deea}
+body.light .switch input:checked+.slider{background:#1677ff}
+body.light .badge.neutral{background:#e6edf5;color:#3b4e63}
+body.light .btn.good{color:#0f6b3f}body.light .btn.bad{color:#a8243c}
+body.light .badge.good{color:#0f7a48}body.light .badge.warn{color:#8a6100}body.light .badge.bad{color:#b3243c}
+body.light .good-text{color:#0f7a48}
+body.light .topbar,body.light .login-card{box-shadow:none}
+@media(max-width:600px){.grid-3{grid-template-columns:1fr}}
+
+.tabs{display:flex;gap:6px;background:#091625;border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:6px}
+.tab{flex:1;border:0;background:transparent;color:var(--muted);padding:10px;border-radius:9px;font-weight:700}
+.tab.active{background:#10233a;color:#fff}
+.login-ok{color:var(--good);font-size:13px;margin-top:10px;min-height:18px}
+.hint{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.4}
+.strength{height:5px;border-radius:99px;background:#172b42;margin-top:8px;overflow:hidden}.strength span{display:block;height:100%;width:0;transition:.2s}
+.btn:disabled,.btn[disabled]{opacity:.45;cursor:not-allowed}
+.role-chip{border-color:rgba(77,163,255,.5);color:#9ccbff}
+body.light .tabs{background:#eef3f9}body.light .tab.active{background:#fff;color:#0b2a4d}body.light .strength{background:#d3deea}
+
+/* --- layout fixes (round 3) --- */
+main{margin:0 auto;align-self:start;min-width:0}
+.layout>*{min-width:0}
+.table-wrap{max-width:100%}
+body.light .role-chip{color:#0b5cad;border-color:rgba(22,119,255,.55)}
+body.light .pill{background:#fff}
+@media(max-width:1000px){.layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){
+ .top-left{gap:8px;min-width:0}.top-left .pill:not(.role-chip){display:none}.top-brand{white-space:nowrap}
+ .page-title{flex-direction:column}.page-title .actions{width:100%}
+ .page-title h2{font-size:21px}th,td{padding:10px 7px;white-space:nowrap}
+ .event{grid-template-columns:70px 1fr}.event .badge,.event .actions{grid-column:1/-1}
+}
+</style>
+</head>
+<body>
+
+<section id="login">
+  <div class="login-card">
+    <div class="brand">
+      <div class="logo">A</div>
+      <div><h1>Aegis Pulse</h1><p>Zero Trust Security Demonstration</p></div>
+    </div>
+    <div class="tabs" role="tablist"><button class="tab active" id="tabAdmin" type="button" role="tab">Admin</button><button class="tab" id="tabEmployee" type="button" role="tab">Employee</button></div>
+    <div id="signinPane">
+      <div class="hint" id="roleHint" style="margin-top:12px">Admin sign-in: full access to every module.</div>
+      <label for="loginUser">Username</label>
+      <input id="loginUser" class="field" autocomplete="username" placeholder="Enter any username" maxlength="20">
+      <label for="loginPass">Password</label>
+      <input id="loginPass" class="field" type="password" autocomplete="current-password" placeholder="Enter password">
+      <button class="primary" id="loginBtn" type="button">Sign in as Admin</button>
+    </div>
+    <div id="loginError" class="login-error" role="alert"></div>
+    <div id="loginOk" class="login-ok"></div>
+    <div class="demo-note"><b>Demo access:</b> choose a role, then use any username. Admin password: <code>admin123</code> &middot; Employee password: <code>employee123</code>.<br><b>Presentation mode:</b> this is a browser-only SIH prototype. It demonstrates a Zero Trust access-control workflow; production deployment would connect secure authentication, telemetry, ML services and a backend.</div>
+  </div>
+</section>
+
+<div id="app">
+<header class="topbar">
+  <div class="top-left"><div class="top-brand">🛡 Aegis Pulse</div><span class="pill"><span class="status-dot"></span>Security engine ready</span><span class="pill role-chip" id="roleChip">User</span></div>
+  <div class="top-right"><span class="pill" id="clock"></span><button class="btn" id="logoutBtn">Logout</button></div>
+</header>
+
+<div class="layout">
+<aside>
+  <button class="nav active" data-view="dashboard">Dashboard</button>
+  <button class="nav" data-view="detection">AI Detection</button>
+  <button class="nav" data-view="users">Users</button>
+  <button class="nav" data-view="devices">Devices</button>
+  <button class="nav" data-view="threats">Threats</button>
+  <button class="nav" data-view="policies">Zero Trust Policies</button>
+  <button class="nav" data-view="audit">Audit Trail</button>
+  <button class="nav" data-view="settings">Settings</button>
+</aside>
+
+<main>
+<section id="view-dashboard" class="view active">
+  <div class="page-title"><div><h2>Security Dashboard</h2><p>Continuous identity, device and access-risk evaluation.</p></div><div class="actions"><button class="btn bad" id="attackBtn">Simulate Attack</button><button class="btn" id="exportBtn">Export Audit</button></div></div>
+  <div class="grid cards">
+    <div class="card"><div class="metric">Security Score</div><div class="metric-value" id="score">92%</div><div class="metric-note" id="scoreNote">Healthy baseline</div></div>
+    <div class="card"><div class="metric">Protected Users</div><div class="metric-value" id="userCount">248</div><div class="metric-note">Identity inventory</div></div>
+    <div class="card"><div class="metric">Protected Devices</div><div class="metric-value" id="deviceCount">186</div><div class="metric-note">Endpoint inventory</div></div>
+    <div class="card"><div class="metric">Active Threats</div><div class="metric-value" id="threatCount">0</div><div class="metric-note" id="threatNote">No active simulated threats</div></div>
+  </div>
+  <div class="grid two" style="margin-top:15px">
+    <div class="card"><div class="section-title">Risk Trend (last 7 evaluations)</div><div id="riskChart" class="chart"></div><div id="chartLabels" class="chart-labels"></div></div>
+    <div class="card"><div class="section-title">Current Security Posture</div><div style="display:grid;gap:15px">
+      <div><div style="display:flex;justify-content:space-between"><span>Identity verification</span><b>Strong</b></div><div class="bar"><span style="width:94%"></span></div></div>
+      <div><div style="display:flex;justify-content:space-between"><span>Device hygiene</span><b>Good</b></div><div class="bar"><span style="width:88%"></span></div></div>
+      <div><div style="display:flex;justify-content:space-between"><span>Policy coverage</span><b>High</b></div><div class="bar"><span style="width:91%"></span></div></div>
+      <div><div style="display:flex;justify-content:space-between"><span>Threat response</span><b id="responseText">Ready</b></div><div class="bar"><span id="responseBar" style="width:96%"></span></div></div>
+    </div></div>
+  </div>
+  <div class="grid two" style="margin-top:15px">
+    <div class="card"><div class="section-title">Recent Security Events</div><div id="recentEvents" class="list"></div></div>
+    <div class="card"><div class="section-title">Zero Trust Flow</div><div class="list">
+      <div class="event"><div class="who">01 Identity</div><div class="desc">Verify the requesting user.</div><span class="badge good">CHECK</span></div>
+      <div class="event"><div class="who">02 Device</div><div class="desc">Evaluate device posture.</div><span class="badge good">CHECK</span></div>
+      <div class="event"><div class="who">03 Context</div><div class="desc">Evaluate location and access context.</div><span class="badge good">CHECK</span></div>
+      <div class="event"><div class="who">04 Policy</div><div class="desc">Apply least-privilege decision.</div><span class="badge good">ENFORCE</span></div>
+    </div></div>
+  </div>
+</section>
+
+<section id="view-detection" class="view">
+  <div class="page-title"><div><h2>AI Risk Detection</h2><p>Explainable risk intelligence prototype using weighted policy factors.</p></div></div>
+  <div class="grid two">
+    <div class="card">
+      <div class="section-title">Access Request Analysis</div>
+      <div class="form-grid">
+        <div><label for="riskUser">User</label><input id="riskUser" maxlength="40" class="field" value="Demo User"></div>
+        <div><label for="riskDevice">Device</label><select id="riskDevice" class="field"><option value="managed">Managed device</option><option value="new">New / unknown device</option><option value="isolated">Previously isolated device</option></select></div>
+        <div><label for="riskLocation">Location</label><select id="riskLocation" class="field"><option value="office">Office / trusted location</option><option value="home">Home network</option><option value="unknown">Unknown location</option></select></div>
+        <div><label for="riskSensitivity">Access sensitivity</label><select id="riskSensitivity" class="field"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></div>
+      </div>
+      <button class="primary" id="analyzeBtn">Analyze Access Risk</button>
+      <div id="riskResult" class="result">Enter the access context and run the risk analysis.</div>
+    </div>
+    <div class="card"><div class="section-title">Decision Logic</div><div class="demo-note" style="margin-bottom:10px"><b>Engine status:</b> Explainable prototype model. Replace the weighted demo factors with a trained ML model when production telemetry is available.</div><div class="list">
+      <div class="event"><div class="who">0–29</div><div class="desc">Low risk; access can proceed.</div><span class="badge good">ALLOW</span></div>
+      <div class="event"><div class="who">30–69</div><div class="desc">Moderate risk; request additional verification.</div><span class="badge warn">MFA</span></div>
+      <div class="event"><div class="who">70–100</div><div class="desc">High risk; deny the request and create an alert.</div><span class="badge bad">BLOCK</span></div>
+      <div class="event"><div class="who">Explainable</div><div class="desc">The result lists every factor that contributed to the score.</div><span class="badge neutral">AUDIT</span></div>
+    </div></div>
+  </div>
+</section>
+
+<section id="view-users" class="view">
+  <div class="page-title"><div><h2>Users</h2><p>Demo identity inventory with local persistence.</p></div><button class="btn good" id="addUserBtn">+ Add User</button></div>
+  <div class="card"><input id="userSearch" class="field" aria-label="Search users" placeholder="Search users..."><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last verification</th></tr></thead><tbody id="userRows"></tbody></table></div></div>
+</section>
+
+<section id="view-devices" class="view">
+  <div class="page-title"><div><h2>Devices</h2><p>Endpoint inventory and isolation controls.</p></div><button class="btn good" id="addDeviceBtn">+ Add Device</button></div>
+  <div class="card"><div class="table-wrap"><table><thead><tr><th>Device</th><th>Owner</th><th>Posture</th><th>Action</th></tr></thead><tbody id="deviceRows"></tbody></table></div></div>
+</section>
+
+<section id="view-threats" class="view">
+  <div class="page-title"><div><h2>Threat Monitoring</h2><p>Detected and simulated events requiring response.</p></div><button class="btn bad" id="attackBtn2">Simulate Ransomware Signal</button></div>
+  <div class="card"><div id="threatList" class="list"></div></div>
+</section>
+
+<section id="view-policies" class="view">
+  <div class="page-title"><div><h2>Zero Trust Policies</h2><p>Policies used by the presentation risk engine.</p></div></div>
+  <div class="card">
+    <div class="policy"><div><b>Require MFA for new devices</b><div class="metric">When on, new devices always need step-up verification.</div></div><label class="switch"><input type="checkbox" checked data-policy="mfa"><span class="slider"></span></label></div>
+    <div class="policy"><div><b>Block unknown locations</b><div class="metric">When on, unknown locations receive a high-risk score.</div></div><label class="switch"><input type="checkbox" checked data-policy="location"><span class="slider"></span></label></div>
+    <div class="policy"><div><b>Trust home networks like office</b><div class="metric">When on, home networks are scored like the office. Off by default to avoid location-only trust.</div></div><label class="switch"><input type="checkbox" data-policy="home"><span class="slider"></span></label></div>
+    <div class="policy"><div><b>Auto-isolate on ransomware signal</b><div class="metric">When enabled, a simulated ransomware event isolates a demo device.</div></div><label class="switch"><input id="autoIsolate" type="checkbox" checked><span class="slider"></span></label></div>
+  </div>
+</section>
+
+<section id="view-audit" class="view">
+  <div class="page-title"><div><h2>Audit Trail</h2><p>Every important demo action is recorded locally.</p></div><div class="actions"><button class="btn" id="clearAuditBtn">Clear</button><button class="btn good" id="exportBtn2">Export CSV</button></div></div>
+  <div class="card"><div class="table-wrap"><table><thead><tr><th>Time</th><th>Actor</th><th>Risk</th><th>Decision</th><th>Event</th></tr></thead><tbody id="auditRows"></tbody></table></div></div>
+</section>
+
+<section id="view-settings" class="view">
+  <div class="page-title"><div><h2>Settings</h2><p>Presentation controls and local demo preferences.</p></div></div>
+  <div class="card">
+    <div class="card" style="margin:0 0 14px;border-color:var(--accent);background:rgba(22,119,255,.06)">
+      <div class="section-head"><div><b>Logged-in Profile</b><div class="metric">Current presentation account and login details.</div></div><span class="badge good" id="profileStatus">ACTIVE SESSION</span></div>
+      <div class="grid-3" style="margin-top:14px">
+        <div><div class="metric">Username</div><div style="font-size:18px;font-weight:800;margin-top:4px" id="profileUsername">—</div></div>
+        <div><div class="metric">Password</div><div style="display:flex;gap:8px;align-items:center;margin-top:4px"><code id="profilePassword" style="font-size:16px">••••••••</code><button class="btn" id="togglePassword">Show</button></div></div>
+        <div><div class="metric">Account Type</div><div style="font-size:18px;font-weight:800;margin-top:4px" id="profileRole">Presentation User</div></div>
+      </div>
+      <div class="demo-note">Demo-only: the password is kept in memory for this tab only and is cleared on logout or refresh. In production, passwords must never be stored or displayed.</div>
+    </div>
+    <div class="policy"><div><b>Dark mode</b><div class="metric">Optimized for projector presentation.</div></div><label class="switch"><input id="darkMode" type="checkbox" checked><span class="slider"></span></label></div>
+    <div class="policy"><div><b>Alert notifications</b><div class="metric">Show on-screen confirmation messages.</div></div><label class="switch"><input id="notifications" type="checkbox" checked><span class="slider"></span></label></div>
+    <div class="policy"><div><b>Reset presentation data</b><div class="metric">Restore the original demo users, devices and audit events.</div></div><button class="btn bad" id="resetBtn">Reset Demo</button></div>
+    <div class="demo-note" style="margin-top:15px">Architecture note: this file is a front-end demonstration. For production SIH deployment, connect authentication, database, endpoint telemetry and a trained ML model through a secure backend/API.</div>
+  </div>
+</section>
+</main></div></div>
+
+<div id="modal" class="modal"><div class="modal-card"><div class="page-title"><div><h2 id="modalTitle">Add</h2><p id="modalSub">Enter details.</p></div><button class="btn" id="modalClose">Close</button></div><div id="modalBody"></div></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+"use strict";
+const KEY="aegisPulseDemoV2";
+const defaults={
+ users:[
+  {name:"Arun Kumar",role:"Administrator",status:"Verified",last:"Just now"},
+  {name:"Priya S",role:"Analyst",status:"Verified",last:"2 min ago"},
+  {name:"Demo User",role:"Employee",status:"Verified",last:"5 min ago"},
+  {name:"Guest Account",role:"Guest",status:"Restricted",last:"12 min ago"}
+ ],
+ devices:[
+  {name:"LAPTOP-01",owner:"Arun Kumar",posture:"Healthy",isolated:false},
+  {name:"LAPTOP-02",owner:"Priya S",posture:"Healthy",isolated:false},
+  {name:"MOBILE-07",owner:"Demo User",posture:"Needs review",isolated:false},
+  {name:"TEST-ENDPOINT",owner:"Guest Account",posture:"Restricted",isolated:false}
+ ],
+ audit:[
+  {time:"Startup",actor:"System",risk:5,decision:"INFO",event:"Aegis Pulse presentation engine initialized"}
+ ],
+ threats:[],
+ riskHistory:[24,18,31,22,28,17,20]
+};
+let sessionPass="";
+let state=loadState(), riskHistory=state.riskHistory||defaults.riskHistory;
+const $=id=>document.getElementById(id);
+function loadState(){try{const s=JSON.parse(localStorage.getItem(KEY));return s?Object.assign(structuredClone(defaults),s):structuredClone(defaults)}catch(e){return structuredClone(defaults)}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function notify(msg){if(!$("notifications").checked)return;const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
+function addAudit(actor,risk,decision,event){state.audit.unshift({time:new Date().toLocaleString(),actor,risk,decision,event});state.audit=state.audit.slice(0,100);save();renderAudit();renderRecent()}
+function score(){const threats=state.threats.length;return Math.max(50,Math.min(100,92-threats*8))}
+function renderDashboard(){ $("score").textContent=score()+"%"; $("userCount").textContent=248+state.users.length-4; $("deviceCount").textContent=186+state.devices.length-4; $("threatCount").textContent=state.threats.length; $("threatNote").textContent=state.threats.length?"Response required":"No active simulated threats";$("scoreNote").textContent=state.threats.length?"Reduced by active threat signals":"Healthy baseline";$("responseText").textContent=state.threats.length?"Investigate":"Ready";$("responseBar").style.width=(state.threats.length?72:96)+"%";renderChart()}
+function renderChart(){const data=riskHistory.slice(-7);$("riskChart").innerHTML=data.map(v=>'<div class="col"><div class="barcol" title="Risk '+v+'" style="height:'+Math.max(8,Math.min(100,v))+'%"></div></div>').join("");$("chartLabels").innerHTML=data.map((_,i)=>"<span>#"+(i+1)+"</span>").join("")}
+function renderRecent(){const events=state.audit.slice(0,6);$("recentEvents").innerHTML=events.map(e=>'<div class="event"><div class="who">'+esc(e.actor)+'</div><div class="desc">'+esc(e.event)+'</div><span class="badge '+badge(e.decision)+'">'+esc(e.decision)+'</span></div>').join("")||'<div class="metric">No events yet.</div>'}
+function badge(d){return d==="ALLOW"||d==="INFO"||d==="ACTION"?"good":d==="MFA"?"warn":d==="BLOCK"||d==="ALERT"?"bad":"neutral"}
+function renderUsers(){ $("userRows").innerHTML=state.users.map(u=>'<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.role)+'</td><td><span class="badge '+(u.status==="Verified"?"good":"warn")+'">'+esc(u.status)+'</span></td><td>'+esc(u.last)+'</td></tr>').join("")}
+function renderDevices(){ $("deviceRows").innerHTML=state.devices.map((d,i)=>'<tr><td><b>'+esc(d.name)+'</b></td><td>'+esc(d.owner)+'</td><td><span class="badge '+(d.isolated?"bad":d.posture==="Healthy"?"good":"warn")+'">'+esc(d.isolated?"Isolated":d.posture)+'</span></td><td>'+(d.isolated?'<button class="btn good" data-restore="'+i+'"'+(isAdmin()?'':' disabled')+'>Restore</button>':'<button class="btn bad" data-isolate="'+i+'"'+(isAdmin()?'':' disabled')+'>Isolate</button>')+'</td></tr>').join("")}
+function renderThreats(){ 
+  $("threatList").innerHTML=state.threats.length?state.threats.map((t,i)=>'<div class="event"><div class="who">Incident '+(i+1)+'</div><div class="desc">'+esc(t.event)+'<br><span class="metric">'+esc(t.time)+'</span></div><div class="actions"><span class="badge bad">ACTIVE</span><button class="btn good" data-resolve="'+i+'"'+(isAdmin()?'':' disabled')+'>Resolve</button></div></div>').join(""):'<div class="result"><span class="good-text"><b>No active threats.</b></span> The response workflow is clear and ready for the next access evaluation.</div>'
+}
+function renderAudit(){ $("auditRows").innerHTML=state.audit.map(e=>'<tr><td>'+esc(e.time)+'</td><td>'+esc(e.actor)+'</td><td>'+esc(e.risk)+'</td><td><span class="badge '+badge(e.decision)+'">'+esc(e.decision)+'</span></td><td>'+esc(e.event)+'</td></tr>').join("")}
+function renderAll(){renderDashboard();renderUsers();renderDevices();renderThreats();renderAudit();renderRecent()}
+function showView(view){if(!canView(view)){view=homeView();notify("Access restricted: Administrator permission required")}document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$("view-"+view).classList.add("active");document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.view===view))}
+function policy(n){const el=document.querySelector('[data-policy="'+n+'"]');return el?el.checked:false}
+function analyze(){
+ const user=$("riskUser").value.trim()||"Demo User", dev=$("riskDevice").value, loc=$("riskLocation").value, sens=$("riskSensitivity").value;
+ let risk=8,f=[];
+ if(dev==="managed"){risk+=5;f.push("managed device")}  if(dev==="new"){risk+=policy("mfa")?32:12;f.push("new device"+(policy("mfa")?" (MFA policy on)":""))} if(dev==="isolated"){risk+=65;f.push("previously isolated device")}
+ if(loc==="office"){risk+=3;f.push("trusted location")} if(loc==="home"){risk+=policy("home")?3:18;f.push(policy("home")?"home network (trusted by policy)":"home network")} if(loc==="unknown"){risk+=policy("location")?48:20;f.push("unknown location"+(policy("location")?" (block policy on)":""))}
+ if(sens==="medium"){risk+=10;f.push("medium sensitivity")} if(sens==="high"){risk+=22;f.push("high sensitivity")}
+ risk=Math.min(100,risk);
+ let decision=risk<30?"ALLOW":risk<70?"MFA":"BLOCK";
+ if(dev==="new"&&policy("mfa")&&decision==="ALLOW")decision="MFA";
+ riskHistory=[...riskHistory.slice(-6),risk];state.riskHistory=riskHistory;save();renderDashboard();
+ $("riskResult").innerHTML='<div>Risk score: <b>'+risk+'/100</b> → <span class="decision '+decision.toLowerCase()+'">'+decision+'</span></div><div class="metric" style="margin-top:8px">Contributing factors: '+esc(f.join(" • "))+'</div><div class="metric" style="margin-top:5px">'+(decision==="ALLOW"?"Low-risk access can proceed.":decision==="MFA"?"Additional verification is required before access.":"Access is blocked and an alert is recorded.")+'</div>';
+ addAudit(user,risk,decision,"Access request evaluated ("+f.join(", ")+")");
+ if(decision==="BLOCK"){state.threats.unshift({time:new Date().toLocaleString(),event:"High-risk access request blocked"});save();renderAll();notify("High-risk request blocked");}
+ else notify("Access decision: "+decision);
+}
+function resolveThreat(i){
+  if(!requireAdmin()||!state.threats[i]) return;
+  const incident=state.threats[i];
+  state.threats.splice(i,1);
+  addAudit("Response Engine",35,"ACTION","Incident resolved: "+incident.event);
+  save(); renderAll(); notify("Threat resolved and removed from active incidents");
+}
+function simulateAttack(){
+ const t={time:new Date().toLocaleString(),event:"Simulated ransomware behavior detected"};
+ state.threats.unshift(t);addAudit("Detection Engine",90,"ALERT",t.event);
+ if($("autoIsolate").checked){const d=state.devices.find(x=>!x.isolated);if(d){d.isolated=true;d.posture="Quarantined";addAudit("Response Engine",90,"ACTION",d.name+" automatically isolated");}}
+ save();renderAll();notify("Threat detected and response workflow completed");showView("threats")
+}
+function restore(i){if(!requireAdmin())return;const d=state.devices[i];if(!d)return;d.isolated=false;d.posture="Needs review";addAudit("Administrator",20,"ACTION",d.name+" restored (posture: needs review)");save();renderAll();notify(d.name+" restored")}
+function isolate(i){if(!requireAdmin())return;const d=state.devices[i];if(!d)return;d.isolated=true;d.posture="Quarantined";addAudit("Administrator",88,"ACTION",d.name+" manually isolated");save();renderAll();notify(d.name+" isolated")}
+function openModal(type){
+ if(!requireAdmin())return;
+ $("modalTitle").textContent=type==="user"?"Add User":"Add Device";$("modalSub").textContent="Add a presentation-demo record."; 
+ $("modalBody").innerHTML=type==="user"?'<label for="modalName">Name</label><input id="modalName" class="field" maxlength="40" placeholder="e.g. New Analyst"><label for="modalRole">Role</label><select id="modalRole" class="field"><option>Employee</option><option>Analyst</option><option>Administrator</option><option>Guest</option></select><button class="primary" id="modalSave">Add User</button>':'<label for="modalName">Device name</label><input id="modalName" class="field" maxlength="40" placeholder="e.g. LAPTOP-05"><label for="modalOwner">Owner</label><input id="modalOwner" class="field" maxlength="40" placeholder="e.g. Demo User"><button class="primary" id="modalSave">Add Device</button>';
+ $("modal").classList.add("open");$("modalSave").onclick=()=>{const n=$("modalName").value.trim();if(!n){notify("Enter a name");return}if((type==="user"?state.users:state.devices).some(x=>x.name.toLowerCase()===n.toLowerCase())){notify("That name already exists");return}if(type==="user"){state.users.push({name:n,role:$("modalRole").value,status:"Verified",last:"Just now"});addAudit("Administrator",0,"ACTION","User "+n+" added")}else{const owner=$("modalOwner").value.trim()||"Demo User";state.devices.push({name:n,owner,posture:"Healthy",isolated:false});addAudit("Administrator",0,"ACTION","Device "+n+" registered")}save();renderAll();$("modal").classList.remove("open");notify("Record added")}}
+function exportCSV(){const rows=[["Time","Actor","Risk","Decision","Event"],...state.audit.map(e=>[e.time,e.actor,e.risk,e.decision,e.event].map(x=>/^[=+\-@\t\r]/.test(String(x))?"'"+x:x))];const csv=rows.map(r=>r.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="aegis-pulse-audit.csv";a.click();URL.revokeObjectURL(a.href)}
+function resetDemo(){if(!requireAdmin())return;if(confirm("Reset all presentation data?")){state=structuredClone(defaults);riskHistory=state.riskHistory;save();renderAll();notify("Demo data reset")}}
+
+/* ===== Accounts / authentication (browser-only demo) ===== */
+const ROLE_PASS={Administrator:"admin123",Employee:"employee123"};
+const ROLE_LABEL={Administrator:"Administrator",Employee:"Employee"};
+const EMPLOYEE_VIEWS=["detection"];
+let loginRole="Administrator",failCount=0,lockUntil=0;
+function isAdmin(){return sessionStorage.getItem("aegisRole")==="Administrator"}
+function allowedViews(){return isAdmin()?null:EMPLOYEE_VIEWS}
+function canView(v){const a=allowedViews();return !a||a.includes(v)}
+function homeView(){return isAdmin()?"dashboard":"detection"}
+function requireAdmin(){if(isAdmin())return true;notify("Administrator permission required");return false}
+function setLoginRole(role){
+  loginRole=role;const adm=role==="Administrator";
+  $("tabAdmin").classList.toggle("active",adm);$("tabEmployee").classList.toggle("active",!adm);
+  $("roleHint").textContent=adm?"Admin sign-in: full access to every module.":"Employee sign-in: access to the AI Risk Detection module only.";
+  $("loginBtn").textContent="Sign in as "+(adm?"Admin":"Employee");
+  $("loginError").textContent="";$("loginOk").textContent="";
+}
+function startSession(username,role,label){
+  $("login").style.display="none";$("app").style.display="block";
+  sessionStorage.setItem("aegisLogged","1");sessionStorage.setItem("aegisUser",username);sessionStorage.setItem("aegisRole",role);sessionStorage.setItem("aegisLabel",label||role);
+  $("loginError").textContent="";$("loginOk").textContent="";$("loginUser").value="";$("loginPass").value="";
+  renderProfile();renderAll();applyRole();showView(homeView());
+  addAudit(username,0,"INFO","Signed in as "+role);
+}
+async function doLogin(){
+  const now=Date.now();
+  if(now<lockUntil){$("loginError").textContent="Too many failed attempts. Try again in "+Math.ceil((lockUntil-now)/1000)+"s.";return}
+  const u=$("loginUser").value.trim(),p=$("loginPass").value;
+  if(!u||!p){$("loginError").textContent="Enter a username and password.";return}
+  if(!/^[^<>"'&]{1,20}$/.test(u)){$("loginError").textContent="Username may not contain < > \" ' or &.";return}
+  if(p===ROLE_PASS[loginRole]){failCount=0;sessionPass=p;startSession(u,loginRole,ROLE_LABEL[loginRole])}
+  else{failCount++;if(failCount>=5){lockUntil=Date.now()+30000;failCount=0;$("loginError").textContent="Too many failed attempts. Locked for 30 seconds."}else $("loginError").textContent="Incorrect password for the "+ROLE_LABEL[loginRole]+" role."}
+}
+function applyRole(){
+  const adm=isAdmin();
+  $("roleChip").textContent=adm?"Administrator":"Employee";
+  document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("hidden",!canView(n.dataset.view)));
+  ["addUserBtn","addDeviceBtn","clearAuditBtn","resetBtn"].forEach(id=>$(id).disabled=!adm);
+  document.querySelectorAll("[data-policy],#autoIsolate").forEach(el=>el.disabled=!adm);
+  renderDevices();renderThreats();
+}
+$("loginBtn").onclick=doLogin;
+$("tabAdmin").onclick=()=>setLoginRole("Administrator");$("tabEmployee").onclick=()=>setLoginRole("Employee");
+["loginUser","loginPass"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()}));
+$("logoutBtn").onclick=()=>{["aegisLogged","aegisUser","aegisRole","aegisLabel"].forEach(k=>sessionStorage.removeItem(k));sessionPass="";$("app").style.display="none";$("login").style.display="grid";setLoginRole("Administrator");$("loginUser").value="";$("loginPass").value=""};
+document.querySelectorAll(".nav").forEach(n=>n.onclick=()=>showView(n.dataset.view));
+$("analyzeBtn").onclick=analyze;$("attackBtn").onclick=simulateAttack;$("attackBtn2").onclick=simulateAttack;$("exportBtn").onclick=exportCSV;$("exportBtn2").onclick=exportCSV;
+$("addUserBtn").onclick=()=>openModal("user");$("addDeviceBtn").onclick=()=>openModal("device");$("modalClose").onclick=()=>$("modal").classList.remove("open");$("modal").onclick=e=>{if(e.target.id==="modal")$("modal").classList.remove("open")};
+$("userSearch").oninput=()=>{const q=$("userSearch").value.toLowerCase();document.querySelectorAll("#userRows tr").forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q)?"":"none")};
+$("deviceRows").onclick=e=>{const b=e.target.closest("[data-isolate]");if(b)return isolate(Number(b.dataset.isolate));const r=e.target.closest("[data-restore]");if(r)restore(Number(r.dataset.restore))};
+$("threatList").onclick=e=>{const b=e.target.closest("[data-resolve]");if(b)resolveThreat(Number(b.dataset.resolve))};
+$("clearAuditBtn").onclick=()=>{if(!requireAdmin())return;if(confirm("Clear the complete presentation audit trail?")){state.audit=[];save();renderAudit();renderRecent();notify("Audit trail cleared")}};
+function renderProfile(){const u=sessionStorage.getItem("aegisUser")||"—";const p=sessionPass;const role=sessionStorage.getItem("aegisLabel")||sessionStorage.getItem("aegisRole")||"Presentation User";$("profileUsername").textContent=u;$("profileRole").textContent=role;$("profilePassword").textContent="••••••••";$("profilePassword").dataset.value=p;$("profilePassword").dataset.shown="0";$("togglePassword").textContent="Show";$("togglePassword").disabled=!p;if(!p)$("profilePassword").textContent="Hidden (not stored)";}
+$("togglePassword").onclick=()=>{const el=$("profilePassword"),btn=$("togglePassword");const shown=el.dataset.shown==="1";el.textContent=shown?"••••••••":(el.dataset.value||"••••••••");el.dataset.shown=shown?"0":"1";btn.textContent=shown?"Show":"Hide";};
+$("resetBtn").onclick=resetDemo;
+document.querySelectorAll("[data-policy],#autoIsolate").forEach(el=>el.addEventListener("change",()=>{const n=el.closest(".policy").querySelector("b").textContent;addAudit("Administrator",0,"ACTION","Policy \""+n+"\" "+(el.checked?"enabled":"disabled"))}));
+$("darkMode").onchange=e=>{
+  document.body.classList.toggle("light",!e.target.checked);
+  localStorage.setItem("aegisDark",e.target.checked?"1":"0");
+};
+const savedTheme=localStorage.getItem("aegisDark");
+if(savedTheme==="0"){$("darkMode").checked=false;document.body.classList.add("light");}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("modal").classList.remove("open")});
+setInterval(()=>$("clock").textContent=new Date().toLocaleTimeString(),1000);$("clock").textContent=new Date().toLocaleTimeString();
+renderAll();
+if(sessionStorage.getItem("aegisLogged")===""+1){$("login").style.display="none";$("app").style.display="block";renderProfile();applyRole();showView(homeView())}
+</script>
+</body>
+</html>
